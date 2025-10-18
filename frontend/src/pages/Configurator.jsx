@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Check } from 'lucide-react';
+import { Check, Tag } from 'lucide-react';
 import {
   models,
   paintColors,
@@ -9,19 +9,29 @@ import {
   chargingOptions,
   insuranceOptions
 } from '../data/carOptions';
+import {
+  getDiscount,
+  applyDiscount,
+  getDiscountAmount,
+} from '../services/discountService';
+import { getConfiguration, updateConfiguration as saveConfiguration } from '../services/configurationService';
 
 const Configurator = () => {
+  // Load initial config from localStorage or use defaults
+  const initialConfig = getConfiguration();
   const [config, setConfig] = useState({
-    model: models[0].id,
-    paint: paintColors[0].id,
-    wheels: wheels[0].id,
-    interior: interiors[0].id,
-    autopilot: autopilotOptions[0].id,
-    charging: chargingOptions[0].id,
-    insurance: insuranceOptions[0].id,
+    model: initialConfig.model || models[0].id,
+    paint: initialConfig.paint || paintColors[0].id,
+    wheels: initialConfig.wheels || wheels[0].id,
+    interior: initialConfig.interior || interiors[0].id,
+    autopilot: initialConfig.autopilot || autopilotOptions[0].id,
+    charging: initialConfig.charging || chargingOptions[0].id,
+    insurance: initialConfig.insurance || insuranceOptions[0].id,
   });
 
   const [totalPrice, setTotalPrice] = useState(0);
+  const [discount, setDiscountState] = useState(null);
+  const [finalPrice, setFinalPrice] = useState(0);
 
   useEffect(() => {
     const selectedModel = models.find(m => m.id === config.model);
@@ -42,10 +52,73 @@ const Configurator = () => {
       (selectedInsurance?.price || 0);
 
     setTotalPrice(total);
+
+    // Check for active discount
+    const activeDiscount = getDiscount();
+    setDiscountState(activeDiscount);
+
+    // Calculate final price with discount
+    if (activeDiscount) {
+      const discountedPrice = applyDiscount(total, activeDiscount.percentage);
+      setFinalPrice(discountedPrice);
+    } else {
+      setFinalPrice(total);
+    }
+  }, [config]);
+
+  // Poll for discount updates every second
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const activeDiscount = getDiscount();
+      setDiscountState(activeDiscount);
+
+      if (activeDiscount) {
+        const discountedPrice = applyDiscount(totalPrice, activeDiscount.percentage);
+        setFinalPrice(discountedPrice);
+      } else {
+        setFinalPrice(totalPrice);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [totalPrice]);
+
+  // Poll for configuration updates from agent (every 500ms)
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const storedConfig = getConfiguration();
+
+      // Check if any config value changed
+      if (
+        storedConfig.model !== config.model ||
+        storedConfig.paint !== config.paint ||
+        storedConfig.wheels !== config.wheels ||
+        storedConfig.interior !== config.interior ||
+        storedConfig.autopilot !== config.autopilot ||
+        storedConfig.charging !== config.charging ||
+        storedConfig.insurance !== config.insurance
+      ) {
+        console.log('[Configurator] Configuration updated by agent:', storedConfig);
+        setConfig({
+          model: storedConfig.model || config.model,
+          paint: storedConfig.paint || config.paint,
+          wheels: storedConfig.wheels || config.wheels,
+          interior: storedConfig.interior || config.interior,
+          autopilot: storedConfig.autopilot || config.autopilot,
+          charging: storedConfig.charging || config.charging,
+          insurance: storedConfig.insurance || config.insurance,
+        });
+      }
+    }, 500);
+
+    return () => clearInterval(interval);
   }, [config]);
 
   const updateConfig = (key, value) => {
-    setConfig(prev => ({ ...prev, [key]: value }));
+    const newConfig = { ...config, [key]: value };
+    setConfig(newConfig);
+    // Save to localStorage so agent can read current state
+    saveConfiguration({ [key]: value });
   };
 
   const selectedModel = models.find(m => m.id === config.model);
@@ -280,9 +353,32 @@ const Configurator = () => {
               </div>
 
               <div className="pt-4 border-t-2 border-gray-300">
+                {discount && (
+                  <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Tag className="text-green-600" size={16} />
+                      <span className="text-sm font-semibold text-green-700">
+                        Discount Applied: {discount.percentage}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm text-gray-600 mb-1">
+                      <span>Original Price:</span>
+                      <span className="line-through">${totalPrice.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between text-sm text-green-700 font-medium">
+                      <span>You Save:</span>
+                      <span>-${getDiscountAmount(totalPrice, discount.percentage).toLocaleString()}</span>
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex justify-between items-center mb-6">
-                  <span className="text-lg font-semibold">Total Price</span>
-                  <span className="text-2xl font-bold">${totalPrice.toLocaleString()}</span>
+                  <span className="text-lg font-semibold">
+                    {discount ? 'Final Price' : 'Total Price'}
+                  </span>
+                  <span className={`text-2xl font-bold ${discount ? 'text-green-600' : ''}`}>
+                    ${finalPrice.toLocaleString()}
+                  </span>
                 </div>
 
                 <button className="w-full cta-button cta-primary pt-4">

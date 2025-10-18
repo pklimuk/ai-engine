@@ -64,7 +64,7 @@ ai-commerce-bot/
 │   ├── tailwind.config.js  # Tailwind configuration
 │   └── package.json
 │
-├── frontend/                 # Additional frontend (if applicable)
+├── frontend/                 # AI Commerce Bot frontend (React + Vite + TypeScript)
 ├── docker-compose.yml        # PostgreSQL database configuration
 ├── run.sh                    # Quick start script
 └── README.md                 # This file
@@ -97,7 +97,15 @@ npm install
 cd ..
 ```
 
-### 4. Start PostgreSQL Database
+### 4. Install Frontend Dependencies (AI Commerce Bot)
+
+```bash
+cd frontend
+npm install
+cd ..
+```
+
+### 5. Start PostgreSQL Database
 
 ```bash
 # From the project root directory
@@ -112,7 +120,7 @@ docker compose ps
 
 You should see the `database` service running on port 5432.
 
-### 5. Set Up Backend Environment
+### 6. Set Up Backend Environment
 
 Create the backend `.env` file:
 
@@ -135,7 +143,7 @@ MEDUSA_ADMIN_ONBOARDING_NEXTJS_DIRECTORY=my-store-storefront
 
 > **Note**: For production, replace `supersecret` with secure random strings.
 
-### 6. Run Database Migrations
+### 7. Run Database Migrations
 
 ```bash
 # From my-store directory
@@ -150,7 +158,7 @@ This will create all required database tables. You should see output like:
 Migrations completed
 ```
 
-### 7. Seed the Database
+### 8. Seed the Database
 
 ```bash
 # From my-store directory
@@ -164,7 +172,7 @@ This populates the database with:
 - Fulfillment providers
 - Publishable API key
 
-### 8. Get the Publishable API Key
+### 9. Get the Publishable API Key
 
 After seeding, retrieve the publishable API key:
 
@@ -175,7 +183,7 @@ docker compose exec database psql -U admin -d db -c "SELECT token FROM public.ap
 
 Copy the token (starts with `pk_`). You'll need this for the next step.
 
-### 9. Set Up Storefront Environment
+### 10. Set Up Storefront Environment
 
 ```bash
 cd ../my-store-storefront
@@ -193,7 +201,7 @@ NEXT_PUBLIC_DEFAULT_REGION=eu
 
 Replace `<paste-your-publishable-key-here>` with the actual key from step 8.
 
-### 10. Return to Project Root
+### 11. Return to Project Root
 
 ```bash
 cd ..
@@ -242,6 +250,14 @@ npm run dev
 cd my-store-storefront
 npm run dev
 ```
+
+#### Terminal 4 - AI Commerce Bot Frontend (Optional)
+```bash
+cd frontend
+npm run dev
+```
+
+The frontend will be available at http://localhost:5173 (default Vite port)
 
 ## Environment Configuration
 

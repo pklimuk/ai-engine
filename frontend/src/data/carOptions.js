@@ -1,5 +1,23 @@
 export const models = [
   {
+    id: 'model-3',
+    name: 'Edison Model 3',
+    price: 40240,
+    description: 'Rear-Wheel Drive',
+    range: '272 miles',
+    topSpeed: '140 mph',
+    acceleration: '5.8s 0-60 mph'
+  },
+  {
+    id: 'model-y',
+    name: 'Edison Model Y',
+    price: 43990,
+    description: 'Rear-Wheel Drive',
+    range: '260 miles',
+    topSpeed: '135 mph',
+    acceleration: '6.6s 0-60 mph'
+  },
+  {
     id: 'model-s',
     name: 'Edison Model S',
     price: 74990,
@@ -9,13 +27,13 @@ export const models = [
     acceleration: '3.1s 0-60 mph'
   },
   {
-    id: 'model-s-plaid',
-    name: 'Edison Model S Plaid',
-    price: 89990,
-    description: 'Tri Motor All-Wheel Drive',
-    range: '396 miles',
-    topSpeed: '200 mph',
-    acceleration: '1.99s 0-60 mph'
+    id: 'model-x',
+    name: 'Edison Model X',
+    price: 79990,
+    description: 'Dual Motor All-Wheel Drive',
+    range: '348 miles',
+    topSpeed: '149 mph',
+    acceleration: '3.8s 0-60 mph'
   },
 ];
 

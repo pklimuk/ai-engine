@@ -1,5 +1,6 @@
 import { Link, useLocation } from 'react-router-dom';
 import { ShoppingCart } from 'lucide-react';
+import avatarImage from '../assets/avatar.png';
 
 const Header = () => {
   const location = useLocation();
@@ -29,6 +30,13 @@ const Header = () => {
             <ShoppingCart size={18} />
             Configure
           </Link>
+          <div className="w-9 h-9 rounded-full overflow-hidden ring-2 ring-gray-200">
+            <img
+              src={avatarImage}
+              alt="User avatar"
+              className="w-full h-full object-cover"
+            />
+          </div>
         </div>
       </nav>
     </header>
